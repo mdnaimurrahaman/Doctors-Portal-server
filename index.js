@@ -27,8 +27,12 @@ async function run(){
             res.send(services);
         });
 
+
+        // THIS IS NOT THE PROPER WAY TO QUERY.
+        // AFTER LEARNING MORE ABOUT MONGODB . USE AGGREGATE LOOKUP , PIPELINE, MATCH , GROUP .
+
         app.get('/available', async(req, res)=>{
-          const date = req.query.date || 'May 15, 2022';
+          const date = req.query.date;
 
           // step 1 : get all services
           const services = await serviceCollection.find().toArray();
@@ -46,6 +50,7 @@ async function run(){
             const booked = serviceBookings.map(book => book.slot);
             // step 6 : select those slots that are not in bookedSlots
             const available = service.slots.filter(slot => !booked.includes(slot))
+            // step 7 : set available to slots to make it easier
             service.slots = available;
             
             // service.booked = serviceBookings.map(s => s.slot);
@@ -61,6 +66,14 @@ async function run(){
        * app.patch("/booking/:id") //  update specific one booking 
        * app.delete("/booking/:id") //  delete specific one booking 
       */
+
+        app.get('/booking', async(req,res)=>{
+          const patient = req.query.patient;
+          const query = {patient: patient};
+          const bookings = await bookingCollection.find(query).toArray();
+          res.send(bookings);
+
+        })
 
         app.post('/booking', async(req, res) =>{
           const booking = req.body;
