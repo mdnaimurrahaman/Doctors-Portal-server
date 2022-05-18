@@ -170,11 +170,23 @@ async function run(){
           return res.send({success: true, result});
         });
 
+        // Doctors get api
+        app.get('/doctor', verifyJWT, verifyAdmin, async(req, res) => {
+          const doctors = await doctorCollection.find().toArray();
+          res.send(doctors)
+        })
 
         // Doctors api creating
         app.post('/doctor',verifyJWT, verifyAdmin, async(req, res) => {
           const doctor = req.body;
           const result = await doctorCollection.insertOne(doctor);
+          res.send(result);
+        })
+        // Doctors delete api 
+        app.delete('/doctor/:email',verifyJWT, verifyAdmin, async(req, res) => {
+          const email = req.params.email;
+          const filter = {email: email};
+          const result = await doctorCollection.deleteOne(filter);
           res.send(result);
         })
 
