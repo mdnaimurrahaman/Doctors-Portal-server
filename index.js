@@ -2,7 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
+var nodemailer = require('nodemailer');
+var sgTransport = require('nodemailer-sendgrid-transport');
+
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -31,6 +35,50 @@ function verifyJWT(req, res, next){
     next();
   });
 }
+
+//------------------------
+
+const emailSenderOptions = {
+  auth: {
+    api_user: 'SENDGRID_USERNAME',
+    api_key: 'SENDGRID_PASSWORD'
+  }
+}
+
+const emailClient = nodemailer.createTransport(sgTransport(emailSenderOptions));
+
+// user send mail function
+function sendAppointmentEmail(booking){
+  const {patient, patientName, treatment, date, slot} = booking;
+
+  var email = {
+    from: process.env.EMAIL_SENDER,
+    to: patient,
+    subject: `Your Appointment for ${treatment} is on ${date} at ${slot} is Confirmed` ,
+    text: `Your Appointment for ${treatment} is on ${date} at ${slot} is Confirmed`,
+    html: `
+    <div>
+      <p>Hello ${patientName},</p>
+      <h3>Your Appointment for ${treatment} is confirmed</h3>
+      <p>Looking forward to seeing you on ${date} at ${slot}.</p>
+      <h3>Our Address</h3>
+      <p>Andor killa Bandorban</p>
+    </div>
+    `
+  };
+
+  emailClient.sendMail(email, function(err, info){
+    if (err ){
+      console.log(err);
+    }
+    else {
+      console.log('Message sent: ', info);
+    }
+});
+  
+
+}
+//---------------------------------------
 
 
 async function run(){
@@ -159,6 +207,14 @@ async function run(){
           }
         })
 
+        // id to get spesipic user booking.
+        app.get('/booking/:id', verifyJWT, async(req, res)=>{
+          const id = req.params.id;
+          const query = {_id: ObjectId(id)};
+          const booking = await bookingCollection.findOne(query);
+          res.send(booking)
+        })
+
         app.post('/booking', async(req, res) =>{
           const booking = req.body;
           const query = {treatment: booking.treatment, date: booking.date, patient: booking.patient}
@@ -167,6 +223,7 @@ async function run(){
             return res.send({success: false, booking: exists})
           }
           const result = await bookingCollection.insertOne(booking);
+          // sendAppointmentEmail(booking)
           return res.send({success: true, result});
         });
 
