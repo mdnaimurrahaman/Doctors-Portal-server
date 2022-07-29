@@ -239,13 +239,6 @@ async function run(){
           const result = await doctorCollection.insertOne(doctor);
           res.send(result);
         })
-        // Doctors delete api 
-        app.delete('/doctor/:email',verifyJWT, verifyAdmin, async(req, res) => {
-          const email = req.params.email;
-          const filter = {email: email};
-          const result = await doctorCollection.deleteOne(filter);
-          res.send(result);
-        })
 
 
     }
@@ -262,3 +255,4 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Doctors app listening on port ${port}`)
 })
+
