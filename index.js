@@ -256,3 +256,9 @@ app.listen(port, () => {
   console.log(`Doctors app listening on port ${port}`)
 })
 
+//  // Doctors api creating
+//  app.post('/doctor',verifyJWT, verifyAdmin, async(req, res) => {
+//   const doctor = req.body;
+//   const result = await doctorCollection.insertOne(doctor);
+//   res.send(result);
+// })
